@@ -1,0 +1,37 @@
+name: One-click Upgrade to Website V2
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  apply-delta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decode embedded delta
+        run: |
+          cat > delta.b64 << 'EOF_B64'
+UEsDBBQAAAAIAJ9kO1Sp5Gz3AAAA9gAAABAAAABqcy93YWl0bGlzdC5qcwD...
+... (long base64 block with the upgrade bundle) ...
+EOF_B64
+          base64 -d delta.b64 > delta.zip
+          unzip -o delta.zip -d ./
+
+      - name: Prepare bot branch
+        run: |
+          git config user.name "aifs-bot"
+          git config user.email "bot@aifinancialservicesinc.com"
+          git checkout -B bot/updates
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m
