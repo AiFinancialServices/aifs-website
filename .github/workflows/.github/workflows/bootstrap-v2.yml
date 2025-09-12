@@ -1,0 +1,191 @@
+name: Bootstrap Website V2 (hands-off upgrade)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare bot branch
+        run: |
+          git config user.name  "aifs-bot"
+          git config user.email "bot@aifinancialservicesinc.com"
+          git checkout -B bot/updates
+
+      - name: Write files (V2 site)
+        shell: bash
+        run: |
+          mkdir -p assets js trust waitlist .github/workflows ir
+          cat > js/consent.js <<'EOF'
+(function(){
+  function setConsent(val){ localStorage.setItem('aifs_consent', val); }
+  function hasConsent(){ return localStorage.getItem('aifs_consent') === 'yes'; }
+  function injectGA(){
+    if(!window.GA_MEASUREMENT_ID){ return; }
+    var s1=document.createElement('script'); s1.async=true; s1.src='https://www.googletagmanager.com/gtag/js?id='+window.GA_MEASUREMENT_ID;
+    document.head.appendChild(s1);
+    var s2=document.createElement('script');
+    s2.innerHTML = "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '"+window.GA_MEASUREMENT_ID+"');";
+    document.head.appendChild(s2);
+  }
+  function banner(){
+    if(hasConsent()) { injectGA(); return; }
+    var bar=document.createElement('div');
+    bar.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#0f2454;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;z-index:9999';
+    bar.innerHTML='<span>We use cookies for analytics. <a href="/privacy.html" style="color:#a0eacf;text-decoration:underline">Learn more</a></span>'+
+      '<span><button id="aifs-accept" style="margin-left:10px;padding:8px 12px;border:0;border-radius:8px;font-weight:700">Accept</button>'+
+      '<button id="aifs-decline" style="margin-left:6px;padding:8px 12px;border:0;border-radius:8px;background:#64748b;color:#fff">Decline</button></span>';
+    document.body.appendChild(bar);
+    document.getElementById('aifs-accept').onclick=function(){ setConsent('yes'); bar.remove(); injectGA(); };
+    document.getElementById('aifs-decline').onclick=function(){ setConsent('no'); bar.remove(); };
+  }
+  window.addEventListener('DOMContentLoaded', banner);
+})();
+EOF
+          cat > ir/index.html <<'EOF'
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Investor Relations — Ai Financial Services</title>
+<link rel="icon" href="../assets/logo.png"><link href="../styles.css" rel="stylesheet">
+</head><body>
+<header class="container">
+  <div class="brand"><img src="../assets/logo.png" class="logo"><span class="brandname">Ai Financial Services</span></div>
+  <nav><a href="../index.html#services">Services</a><a href="../trust/trust.html">Trust</a><a href="../index.html#contact">Contact</a></nav>
+</header>
+<section class="section container">
+  <h1>Investor Relations</h1>
+  <p>We build AI-native financial services for individuals and small businesses.</p>
+  <div class="grid two">
+    <div class="card">
+      <h3>Leadership</h3>
+      <p>Our experienced executive team operates with transparency and regulatory rigor.</p>
+    </div>
+    <div class="card">
+      <h3>Key Metrics (coming soon)</h3>
+      <ul><li>SMB ARR</li><li>Client retention</li><li>Gross/Net revenue retention</li></ul>
+    </div>
+  </div>
+</section>
+<footer class="footer"><div class="container"><p>© 2025 Ai Financial Services, Inc.</p></div></footer>
+</body></html>
+EOF
+          if [ -f index.html ]; then rm index.html; fi
+          cat > index.html <<'EOF'
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ai Financial Services</title>
+  <meta name="description" content="Smart Finance. Powered by AI. Built for Everyone.">
+  <link rel="icon" href="assets/logo.png">
+  <link href="styles.css" rel="stylesheet">
+  <script>window.WAITLIST_ENDPOINT='YOUR_APPS_SCRIPT_WEB_APP_URL';window.GA_MEASUREMENT_ID='G-XXXXXXX';</script>
+  <script defer src="js/waitlist.js"></script>
+  <script defer src="js/consent.js"></script>
+</head>
+<body>
+  <header class="container">
+    <div class="brand">
+      <img src="assets/logo.png" alt="Ai Financial Services Logo" class="logo">
+      <span class="brandname">Ai Financial Services</span>
+    </div>
+    <nav>
+      <a href="#services">Services</a>
+      <a href="trust/trust.html">Trust</a>
+      <a href="ir/index.html">Investors</a>
+      <a href="#contact">Contact</a>
+      <a class="cta" href="#join">Join Waitlist</a>
+    </nav>
+  </header>
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <h1>Smart Finance. Powered by AI. Built for Everyone.</h1>
+        <p>Personal + Small Business finance in one global platform: AI bookkeeping, tax, and a virtual CFO — with transparency and compliance built-in.</p>
+        <a class="button" href="#join">Get Started</a>
+      </div>
+      <div class="hero-art">
+        <img src="assets/logo.png" alt="AI Finance" class="hero-art-img"/>
+      </div>
+    </div>
+  </section>
+  <section id="services" class="section container">
+    <h2>What We Offer</h2>
+    <div class="grid">
+      <div class="card"><h3>Individuals</h3><ul><li>AI tax prep & filing</li><li>Smart budgeting & alerts</li><li>Credit optimization</li></ul></div>
+      <div class="card"><h3>Small Businesses</h3><ul><li>Automated bookkeeping & dashboards</li><li>Virtual CFO Lite & forecasting</li><li>Sales & payroll tax compliance</li></ul></div>
+      <div class="card"><h3>Trust & Compliance</h3><ul><li>GDPR/CCPA-ready privacy controls</li><li>Immutable audit logs</li><li>Regulatory sandboxes (UK, SG, US)</li></ul></div>
+    </div>
+  </section>
+  <section id="join" class="section container">
+    <h2>Join the Waitlist</h2>
+    <form id="waitlist-form" class="waitlist">
+      <input type="text" name="name" placeholder="Your name" required>
+      <input type="email" name="email" placeholder="Your email" required>
+      <select name="segment">
+        <option>I'm an individual</option>
+        <option>I'm a small business</option>
+        <option>Investor / Partner</option>
+      </select>
+      <button type="submit" class="button">Request Access</button>
+    </form>
+    <p id="waitlist-status" class="fineprint"></p>
+    <p class="fineprint">By submitting, you agree to our <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms of Service</a>.</p>
+  </section>
+  <section id="contact" class="section alt">
+    <div class="container">
+      <h2>Contact</h2>
+      <div class="grid two">
+        <div>
+          <h4>General</h4>
+          <p><a href="mailto:info@aifinancialservicesinc.com">info@aifinancialservicesinc.com</a></p>
+          <h4>Investors</h4>
+          <p><a href="mailto:investors@aifinancialservicesinc.com">investors@aifinancialservicesinc.com</a></p>
+        </div>
+        <div>
+          <h4>US Year 1 Cities</h4>
+          <p>NYC · Boston · Philadelphia · Miami · Atlanta · Chicago · Detroit · Minneapolis · Dallas · Houston · Austin · Nashville · Los Angeles · San Francisco · Seattle · Denver</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+    <div class="container">
+      <p>© 2025 Ai Financial Services, Inc. EIN 39-4283355 · A Delaware corporation registered in Texas.</p>
+      <p><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+    </div>
+  </footer>
+</body>
+</html>
+EOF
+
+      - name: Commit changes
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Bootstrap Website V2 + GA4 consent + IR page"
+          fi
+
+      - name: Push bot branch
+        run: git push origin bot/updates --force
+
+      - name: Merge to main
+        run: |
+          if ! git show-ref --verify --quiet refs/heads/main; then git branch -M main; fi
+          git checkout main
+          git pull origin main || true
+          git merge --no-edit --strategy-option theirs bot/updates || true
+          git push origin main
