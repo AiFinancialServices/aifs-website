@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trust — Ai Financial Services</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Trust & Security</h1>
+    <div id="badge" class="badge">Loading status…</div>
+    <p>We protect your data with encryption in transit and at rest, MFA-by-default, and least-privilege access. IRS Pub. 1345 alignment in progress.</p>
+    <h2>Licenses & Commitments</h2>
+    <ul id="licenses"></ul>
+    <h3>Uptime target</h3>
+    <div id="uptime"></div>
+  </div>
+  <script>
+    fetch('status.json').then(r=>r.json()).then(data=>{
+      const badge = document.getElementById('badge');
+      const text = (data.efinStatus === 'approved' && data.efinNumber)
+        ? `IRS e-file provider — approved (EFIN ${data.efinNumber})`
+        : 'IRS e-file provider — application submitted';
+      badge.textContent = text;
+      document.getElementById('uptime').textContent = data.targetUptime || '';
+      const ul = document.getElementById('licenses');
+      (data.licenses||[]).forEach(x=>{ const li=document.createElement('li'); li.textContent=x; ul.appendChild(li); });
+    }).catch(()=>{ document.getElementById('badge').textContent='Status unavailable'; });
+  </script>
+</body>
+</html>

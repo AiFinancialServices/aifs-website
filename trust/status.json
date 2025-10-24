@@ -1,0 +1,13 @@
+{
+  "targetUptime": "99.9%",
+  "incidentSLA": "72 hrs",
+  "dataResidency": "US",
+  "licenses": [
+    "Montana Corporation (active)",
+    "Texas Foreign Registration (filing submitted)",
+    "IRS E-File Provider (application submitted)"
+  ],
+  "auditNote": "SOC2-lite controls implemented; third-party testing planned.",
+  "efinStatus": "pending",
+  "efinNumber": ""
+}
